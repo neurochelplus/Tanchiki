@@ -79,8 +79,8 @@ export class InputManager {
         
         // Aim angle from right joystick
         if (this.mobileAim.active) {
-            // Use atan2(x, -y) to match server orientation
-            this.currentInput.angle = Math.atan2(this.mobileAim.x, -this.mobileAim.y);
+            // Use atan2(x, y) - nipplejs y+ is up, which matches game's forward direction
+            this.currentInput.angle = Math.atan2(this.mobileAim.x, this.mobileAim.y);
             this.currentInput.shooting = true;
             
             // Trigger shoot callback with cooldown
