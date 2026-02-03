@@ -1,0 +1,336 @@
+/* ============================================
+   Tanchiki.io - Global Styles
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1a2e;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Spawn Screen */
+.spawn-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.spawn-screen h1 {
+    font-size: 4rem;
+    color: #4ade80;
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+    margin-bottom: 2rem;
+}
+
+.spawn-screen .subtitle {
+    font-size: 1.2rem;
+    color: #888;
+    margin-bottom: 2rem;
+}
+
+.spawn-screen input {
+    width: 300px;
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    border: 2px solid #4ade80;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.spawn-screen input::placeholder {
+    color: #666;
+}
+
+.spawn-screen button {
+    padding: 15px 50px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.spawn-screen button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+}
+
+.spawn-screen .controls-hint {
+    margin-top: 2rem;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.spawn-screen .death-info {
+    color: #ef4444;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* HUD */
+.hud {
+    position: fixed;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.hud-top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.hud-top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.hp-bar {
+    width: 200px;
+    height: 25px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 2px solid #333;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #22c55e);
+    transition: width 0.3s;
+}
+
+.hp-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 25px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.score-display {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.power-ups-active {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.power-up-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    animation: pulse 1s infinite;
+}
+
+.power-up-icon.triple {
+    background: rgba(249, 115, 22, 0.8);
+}
+
+.power-up-icon.speed {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Leaderboard */
+.leaderboard {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    padding: 15px;
+    min-width: 200px;
+}
+
+.leaderboard h3 {
+    font-size: 1rem;
+    color: #4ade80;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 0.9rem;
+}
+
+.leaderboard-entry.self {
+    color: #4ade80;
+    font-weight: bold;
+}
+
+.leaderboard-entry .rank {
+    width: 25px;
+    color: #888;
+}
+
+.leaderboard-entry .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leaderboard-entry .score {
+    width: 60px;
+    text-align: right;
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    z-index: 60;
+    pointer-events: none;
+}
+
+.joystick-zone {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    bottom: 20px;
+    pointer-events: auto;
+}
+
+.joystick-zone.left {
+    left: 20px;
+}
+
+.joystick-zone.right {
+    right: 20px;
+}
+
+/* Kill Feed */
+.kill-feed {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.kill-entry {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 15px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    animation: fadeIn 0.3s, fadeOut 0.3s 4.7s;
+}
+
+.kill-entry .killer {
+    color: #4ade80;
+}
+
+.kill-entry .victim {
+    color: #ef4444;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Connection Status */
+.connection-status {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 50;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.connection-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.connection-dot.connected {
+    background: #4ade80;
+    box-shadow: 0 0 10px #4ade80;
+}
+
+.connection-dot.disconnected {
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+}
+
+.ping-display {
+    color: #888;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .spawn-screen h1 {
+        font-size: 2.5rem;
+    }
+    
+    .spawn-screen input {
+        width: 250px;
+    }
+    
+    .hp-bar {
+        width: 150px;
+    }
+    
+    .leaderboard {
+        min-width: 150px;
+        font-size: 0.8rem;
+    }
+}
