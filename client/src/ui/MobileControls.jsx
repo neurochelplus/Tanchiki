@@ -42,7 +42,8 @@ export function MobileControls({ onInput }) {
             rightJoystickRef.current.on('move', (evt, data) => {
                 const x = data.vector.x;
                 const y = data.vector.y;
-                onInput('aim', { x, y: -y, active: true });
+                // Pass raw joystick values, inversion is handled in InputManager
+                onInput('aim', { x, y, active: true });
             });
             
             rightJoystickRef.current.on('end', () => {

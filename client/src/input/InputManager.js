@@ -24,6 +24,10 @@ export class InputManager {
         // Callbacks
         this.onShoot = null;
         
+        // Mobile shooting cooldown
+        this.lastMobileShootTime = 0;
+        this.shootCooldown = 200; // ms
+        
         // Initialize appropriate input handler
         this.isMobile = isMobile();
         
@@ -79,9 +83,13 @@ export class InputManager {
             this.currentInput.angle = Math.atan2(this.mobileAim.x, -this.mobileAim.y);
             this.currentInput.shooting = true;
             
-            // Trigger shoot callback
-            if (this.onShoot) {
-                this.onShoot();
+            // Trigger shoot callback with cooldown
+            const now = Date.now();
+            if (now - this.lastMobileShootTime >= this.shootCooldown) {
+                this.lastMobileShootTime = now;
+                if (this.onShoot) {
+                    this.onShoot();
+                }
             }
         } else {
             this.currentInput.shooting = false;

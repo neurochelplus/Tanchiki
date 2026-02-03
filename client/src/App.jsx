@@ -22,6 +22,7 @@ function App() {
     const [ping, setPing] = useState(0);
     const [kills, setKills] = useState([]);
     const [killedBy, setKilledBy] = useState(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     
     const mobile = isMobile();
     
@@ -144,6 +145,54 @@ function App() {
         }
     }, []);
     
+    // Toggle fullscreen mode
+    const toggleFullscreen = useCallback(() => {
+        const elem = document.documentElement;
+        
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            // Enter fullscreen
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                // Safari/iOS
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                // IE/Edge
+                elem.msRequestFullscreen();
+            }
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    }, []);
+    
+    // Listen for fullscreen changes
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(
+                !!document.fullscreenElement || 
+                !!document.webkitFullscreenElement ||
+                !!document.msFullscreenElement
+            );
+        };
+        
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
+    
     // Handle mobile joystick input
     const handleMobileInput = useCallback((type, data) => {
         if (gameRef.current && networkRef.current) {
@@ -158,6 +207,23 @@ function App() {
     return (
         <>
             <div id="game-container" ref={containerRef} />
+            
+            {/* Fullscreen button - always visible */}
+            <button 
+                className="fullscreen-button" 
+                onClick={toggleFullscreen}
+                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+                {isFullscreen ? (
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                    </svg>
+                ) : (
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                    </svg>
+                )}
+            </button>
             
             {gameState === 'menu' && (
                 <SpawnScreen 

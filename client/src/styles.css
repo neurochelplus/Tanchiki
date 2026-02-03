@@ -315,6 +315,46 @@ body {
     color: #888;
 }
 
+/* Fullscreen Button */
+.fullscreen-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 200;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(74, 222, 128, 0.5);
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    padding: 0;
+}
+
+.fullscreen-button:hover {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
+    transform: scale(1.05);
+}
+
+.fullscreen-button:active {
+    transform: scale(0.95);
+}
+
+.fullscreen-button svg {
+    pointer-events: none;
+}
+
+/* Adjust leaderboard position when fullscreen button is present */
+.hud-top-right {
+    top: 80px;
+    right: 20px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .spawn-screen h1 {
