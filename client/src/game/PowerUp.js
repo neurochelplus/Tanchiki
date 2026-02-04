@@ -43,6 +43,18 @@ export class PowerUpManager {
             mesh.castShadow = true;
             mesh.count = 0;
             
+            // IMPORTANT: Disable frustum culling to prevent disappearing
+            mesh.frustumCulled = false;
+            
+            // Initialize all matrices to identity (off-screen)
+            const dummy = new THREE.Object3D();
+            dummy.position.set(0, -1000, 0); // Far below the scene
+            dummy.updateMatrix();
+            for (let i = 0; i < this.maxPowerUps; i++) {
+                mesh.setMatrixAt(i, dummy.matrix);
+            }
+            mesh.instanceMatrix.needsUpdate = true;
+            
             this.scene.add(mesh);
             this.meshes[type] = mesh;
         }
@@ -66,6 +78,16 @@ export class PowerUpManager {
         // Count by type
         const counts = { tripleShot: 0, speed: 0, heal: 0 };
         
+        // First, reset all matrices to hidden position
+        const hiddenMatrix = new THREE.Matrix4();
+        hiddenMatrix.setPosition(0, -1000, 0);
+        
+        for (const mesh of Object.values(this.meshes)) {
+            for (let i = 0; i < this.maxPowerUps; i++) {
+                mesh.setMatrixAt(i, hiddenMatrix);
+            }
+        }
+        
         for (const powerUp of this.powerUps.values()) {
             const mesh = this.meshes[powerUp.type];
             if (!mesh) continue;
@@ -79,6 +101,7 @@ export class PowerUpManager {
             this.dummy.position.set(powerUp.x, floatY, powerUp.z);
             this.dummy.rotation.y = this.time * 2;
             this.dummy.rotation.x = Math.sin(this.time) * 0.3;
+            this.dummy.scale.set(1, 1, 1);
             this.dummy.updateMatrix();
             
             mesh.setMatrixAt(index, this.dummy.matrix);
@@ -87,7 +110,8 @@ export class PowerUpManager {
         
         // Update counts and matrices
         for (const [type, mesh] of Object.entries(this.meshes)) {
-            mesh.count = counts[type];
+            // Always use maxPowerUps as count - hidden ones are just off-screen
+            mesh.count = this.maxPowerUps;
             mesh.instanceMatrix.needsUpdate = true;
         }
     }

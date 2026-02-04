@@ -324,8 +324,8 @@ export class GameLoop {
         
         const now = Date.now();
         
-        // Fire rate limiting (200ms between shots)
-        if (now - player.lastShotTime < 200) return [];
+        // Fire rate limiting (1000ms = 1 second between shots)
+        if (now - player.lastShotTime < 1000) return [];
         player.lastShotTime = now;
         
         // Check if triple shot is active

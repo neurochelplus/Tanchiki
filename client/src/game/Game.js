@@ -176,7 +176,7 @@ export class Game {
             // Create tank if doesn't exist
             if (!this.tanks.has(data.id)) {
                 const isLocal = data.id === this.localPlayerId;
-                const tank = new Tank(data.id, data.n, isLocal);
+                const tank = new Tank(data.id, data.n, isLocal, data.c);
                 tank.setPosition(data.x, data.z);
                 this.renderer.scene.add(tank.group);
                 this.tanks.set(data.id, tank);

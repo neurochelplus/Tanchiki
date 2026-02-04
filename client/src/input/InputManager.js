@@ -26,7 +26,7 @@ export class InputManager {
         
         // Mobile shooting cooldown
         this.lastMobileShootTime = 0;
-        this.shootCooldown = 200; // ms
+        this.shootCooldown = 1000; // ms (1 second between shots)
         
         // Initialize appropriate input handler
         this.isMobile = isMobile();

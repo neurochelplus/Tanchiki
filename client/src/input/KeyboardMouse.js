@@ -32,7 +32,7 @@ export class KeyboardMouse {
         // Callbacks
         this.onShoot = null;
         this.lastShootTime = 0;
-        this.shootCooldown = 200; // ms
+        this.shootCooldown = 1000; // ms (1 second between shots)
         
         this.bindEvents();
     }

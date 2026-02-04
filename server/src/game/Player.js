@@ -2,10 +2,27 @@
 // Player - Server-side player entity
 // ============================================
 
+// Predefined tank colors for variety
+const TANK_COLORS = [
+    0x4ade80, // Green
+    0xe74c3c, // Red
+    0x3b82f6, // Blue
+    0xf59e0b, // Orange
+    0x8b5cf6, // Purple
+    0xec4899, // Pink
+    0x14b8a6, // Teal
+    0xeab308, // Yellow
+    0x6366f1, // Indigo
+    0x06b6d4, // Cyan
+];
+
 export class Player {
     constructor(id, nickname, x, z) {
         this.id = id;
         this.nickname = nickname || 'Player';
+        
+        // Random tank color (consistent for this player)
+        this.color = TANK_COLORS[Math.floor(Math.random() * TANK_COLORS.length)];
         
         // Position & rotation
         this.x = x;
@@ -59,6 +76,7 @@ export class Player {
         return {
             id: this.id,
             n: this.nickname,
+            c: this.color, // Tank color
             x: Math.round(this.x * 10) / 10,
             z: Math.round(this.z * 10) / 10,
             ba: Math.round(this.bodyAngle * 100) / 100,

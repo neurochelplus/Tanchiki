@@ -5,10 +5,11 @@
 import * as THREE from 'three';
 
 export class Tank {
-    constructor(id, nickname, isLocal = false) {
+    constructor(id, nickname, isLocal = false, color = null) {
         this.id = id;
         this.nickname = nickname;
         this.isLocal = isLocal;
+        this.tankColor = color; // Color from server
         
         this.group = new THREE.Group();
         this.turretGroup = new THREE.Group();
@@ -26,10 +27,11 @@ export class Tank {
     }
     
     createModel() {
-        // Colors
-        const bodyColor = this.isLocal ? 0x4ade80 : 0xe74c3c;
+        // Use color from server, or fallback to default
+        const bodyColor = this.tankColor || 0x4ade80;
         const trackColor = 0x2c3e50;
-        const turretColor = this.isLocal ? 0x22c55e : 0xc0392b;
+        // Slightly darker shade for turret
+        const turretColor = this.tankColor ? this.darkenColor(this.tankColor, 0.15) : 0x22c55e;
         const gunColor = 0x1a1a1a;
         
         // Materials (Phong for performance + nice look)
@@ -136,6 +138,19 @@ export class Tank {
         this.turretMaterial = turretMat;
     }
     
+    // Helper to darken a hex color
+    darkenColor(hex, factor) {
+        const r = Math.floor(((hex >> 16) & 0xff) * (1 - factor));
+        const g = Math.floor(((hex >> 8) & 0xff) * (1 - factor));
+        const b = Math.floor((hex & 0xff) * (1 - factor));
+        return (r << 16) | (g << 8) | b;
+    }
+    
+    // Convert hex color to CSS string
+    hexToCSS(hex) {
+        return '#' + hex.toString(16).padStart(6, '0');
+    }
+    
     createNameLabel() {
         // Create canvas for name
         const canvas = document.createElement('canvas');
@@ -147,9 +162,18 @@ export class Tank {
         ctx.fillRect(0, 0, 256, 64);
         
         ctx.font = 'bold 32px Arial';
-        ctx.fillStyle = this.isLocal ? '#4ade80' : '#ffffff';
+        // Use tank color for name, highlight local player
+        const nameColor = this.tankColor ? this.hexToCSS(this.tankColor) : '#ffffff';
+        ctx.fillStyle = this.isLocal ? nameColor : '#ffffff';
         ctx.textAlign = 'center';
         ctx.fillText(this.nickname.substring(0, 12), 128, 42);
+        
+        // Add outline for local player to highlight
+        if (this.isLocal) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.strokeText(this.nickname.substring(0, 12), 128, 42);
+        }
         
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMat = new THREE.SpriteMaterial({ 
