@@ -2,10 +2,11 @@ import React, { useMemo } from 'react';
 
 export function Leaderboard({ players, localPlayerId }) {
     const sortedPlayers = useMemo(() => {
+        const isMobile = window.innerWidth <= 480;
         return [...players]
             .filter(p => p.a) // Only alive players
             .sort((a, b) => b.s - a.s) // Sort by score descending
-            .slice(0, 10); // Top 10
+            .slice(0, isMobile ? 3 : 10); // Top 3 on mobile, top 10 otherwise
     }, [players]);
     
     if (sortedPlayers.length === 0) return null;

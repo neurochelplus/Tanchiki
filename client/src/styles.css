@@ -182,6 +182,8 @@ body {
     border-radius: 10px;
     padding: 15px;
     min-width: 200px;
+    max-height: 40vh;
+    overflow-y: auto;
 }
 
 .leaderboard h3 {
@@ -369,8 +371,41 @@ body {
         width: 150px;
     }
     
-    .leaderboard {
-        min-width: 150px;
-        font-size: 0.8rem;
+    .hud-top-right {
+        top: 10px;
+        right: 10px;
+        max-height: 40vh;
     }
+    
+    .leaderboard {
+        min-width: 120px !important;
+        max-width: 140px;
+        padding: 8px !important;
+        font-size: 0.7rem !important;
+        max-height: 40vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .leaderboard h3 {
+        font-size: 0.7rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .leaderboard-entry {
+        padding: 2px 0 !important;
+    }
+    
+    .leaderboard-entry .rank {
+        width: 18px !important;
+    }
+    
+    .leaderboard-entry .score {
+        width: 40px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hud-top-right {
+        top: 10px;
+        right: 10px;
 }
