@@ -23,7 +23,21 @@ app.get('/', (req, res) => {
     res.json({ 
         status: 'Tanchiki.io server is running',
         players: gameLoop.gameState.getPlayerCount(),
-        arenaSize: gameLoop.gameState.arenaSize
+        arenaSize: gameLoop.gameState.arenaSize,
+        performance: gameLoop.getPerformanceStats()
+    });
+});
+
+app.get('/stats', (req, res) => {
+    res.json({
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        players: gameLoop.gameState.getPlayerCount(),
+        bullets: gameLoop.gameState.bullets.size,
+        powerUps: gameLoop.gameState.powerUps.size,
+        blocks: gameLoop.gameState.blocks.size,
+        arenaSize: gameLoop.gameState.arenaSize,
+        performance: gameLoop.getPerformanceStats()
     });
 });
 

@@ -33,28 +33,7 @@ export class Arena {
         
         this.group.add(this.ground);
         
-        // Grass patches for visual variety
-        const patchGeometry = new THREE.PlaneGeometry(100, 100);
-        const patchMaterial = new THREE.MeshPhongMaterial({
-            color: 0x4a7c4a,
-            shininess: 5
-        });
-        
-        for (let i = 0; i < 30; i++) {
-            const patch = new THREE.Mesh(patchGeometry, patchMaterial);
-            patch.rotation.x = -Math.PI / 2;
-            patch.position.set(
-                (Math.random() - 0.5) * 3000,
-                0.1,
-                (Math.random() - 0.5) * 3000
-            );
-            patch.scale.set(
-                0.5 + Math.random() * 1.5,
-                0.5 + Math.random() * 1.5,
-                1
-            );
-            this.group.add(patch);
-        }
+        // Grass patches removed to prevent z-fighting/visual artifacts
     }
     
     createBoundary() {

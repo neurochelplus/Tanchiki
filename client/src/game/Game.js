@@ -157,6 +157,17 @@ export class Game {
     updateTanks(playersData) {
         const activeIds = new Set();
         
+        // Find leader (highest score)
+        let leaderId = null;
+        let maxScore = -1;
+        
+        for (const data of playersData) {
+            if (data.s > maxScore) {
+                maxScore = data.s;
+                leaderId = data.id;
+            }
+        }
+        
         for (const data of playersData) {
             activeIds.add(data.id);
             
@@ -187,6 +198,7 @@ export class Game {
             if (tank) {
                 tank.setAlive(data.a);
                 tank.setInvulnerable(data.inv);
+                tank.setLeader(data.id === leaderId && maxScore > 0);
             }
         }
         

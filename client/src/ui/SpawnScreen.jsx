@@ -1,13 +1,14 @@
 import React, { useState, useCallback } from 'react';
 
-export function SpawnScreen({ onJoin, connected, isDeath = false, killedBy = null, nickname = '' }) {
+export function SpawnScreen({ onJoin, connected, isDeath = false, killedBy = null, nickname = '', respawnTimer = 0 }) {
     const [inputNickname, setInputNickname] = useState(nickname || '');
     
     const handleSubmit = useCallback((e) => {
         e.preventDefault();
+        if (respawnTimer > 0) return; // Prevent join if timer active
         const name = inputNickname.trim() || 'Player';
         onJoin(name);
-    }, [inputNickname, onJoin]);
+    }, [inputNickname, onJoin, respawnTimer]);
     
     return (
         <div className="spawn-screen">
@@ -20,7 +21,7 @@ export function SpawnScreen({ onJoin, connected, isDeath = false, killedBy = nul
             )}
             
             <p className="subtitle">
-                {isDeath ? 'Try again?' : 'Multiplayer Tank Battle'}
+                {isDeath ? (respawnTimer > 0 ? `Respawn in ${respawnTimer}s` : 'Try again?') : 'Multiplayer Tank Battle'}
             </p>
             
             <form onSubmit={handleSubmit}>
@@ -35,8 +36,8 @@ export function SpawnScreen({ onJoin, connected, isDeath = false, killedBy = nul
                     />
                 )}
                 
-                <button type="submit" disabled={!connected}>
-                    {!connected ? 'Connecting...' : (isDeath ? 'RESPAWN' : 'PLAY')}
+                <button type="submit" disabled={!connected || respawnTimer > 0} style={respawnTimer > 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
+                    {!connected ? 'Connecting...' : (isDeath ? (respawnTimer > 0 ? `Wait ${respawnTimer}s` : 'RESPAWN') : 'PLAY')}
                 </button>
             </form>
             

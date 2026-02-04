@@ -19,6 +19,7 @@ export class Tank {
         
         // Create tank model
         this.createModel();
+        this.createCrown();
         this.createNameLabel();
         
         // Animation
@@ -138,6 +139,46 @@ export class Tank {
         this.turretMaterial = turretMat;
     }
     
+    createCrown() {
+        // Crown group
+        this.crownGroup = new THREE.Group();
+        
+        const crownMat = new THREE.MeshPhongMaterial({ 
+            color: 0xffd700, // Gold
+            shininess: 80,
+            emissive: 0x443300,
+            emissiveIntensity: 0.2
+        });
+        
+        // Base ring
+        const ringGeo = new THREE.TorusGeometry(5, 1, 8, 12);
+        const ring = new THREE.Mesh(ringGeo, crownMat);
+        ring.rotation.x = Math.PI / 2;
+        this.crownGroup.add(ring);
+        
+        // Spikes
+        const spikeGeo = new THREE.ConeGeometry(1.5, 5, 4);
+        for (let i = 0; i < 4; i++) {
+            const spike = new THREE.Mesh(spikeGeo, crownMat);
+            const angle = (i / 4) * Math.PI * 2;
+            spike.position.set(Math.sin(angle) * 5, 2, Math.cos(angle) * 5);
+            // Rotate spike to face outward slightly? No, simple vertical is fine.
+            this.crownGroup.add(spike);
+        }
+        
+        // Position above name
+        this.crownGroup.position.y = 70;
+        this.crownGroup.visible = false;
+        
+        this.group.add(this.crownGroup);
+    }
+    
+    setLeader(isLeader) {
+        if (this.crownGroup) {
+            this.crownGroup.visible = isLeader;
+        }
+    }
+
     // Helper to darken a hex color
     darkenColor(hex, factor) {
         const r = Math.floor(((hex >> 16) & 0xff) * (1 - factor));
@@ -222,6 +263,13 @@ export class Tank {
         // Update alive state
         this.setAlive(state.isAlive);
         this.setInvulnerable(state.invulnerable);
+        
+        // Rotate crown
+        if (this.crownGroup && this.crownGroup.visible) {
+            this.crownGroup.rotation.y += deltaTime * 2;
+            // Bobbing effect
+            this.crownGroup.position.y = 70 + Math.sin(Date.now() / 200) * 2;
+        }
     }
     
     updateTurret(angle) {

@@ -251,7 +251,7 @@ body {
 .kill-feed {
     position: fixed;
     top: 100px;
-    right: 20px;
+    left: 20px;
     z-index: 50;
     pointer-events: none;
 }

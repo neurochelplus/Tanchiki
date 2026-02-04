@@ -34,7 +34,7 @@ export class GameState {
             powerUpSpawnInterval: 5000,  // ms
             blockRespawnInterval: 3000,  // ms - faster respawn for blocks
             bulletSpeed: 400,
-            bulletLifetime: 3000,        // ms
+            bulletLifetime: 750,         // ms (Reduced range: 400 * 0.75 = 300 units)
             playerMaxHp: 100,
             playerSpeed: 150,
             playerSize: 30,

@@ -1,5 +1,5 @@
 // ============================================
-// Game Loop - Main server tick loop (20-30 Hz)
+// Game Loop - Main server tick loop (optimized)
 // ============================================
 
 import { GameState } from './GameState.js';
@@ -10,11 +10,15 @@ export class GameLoop {
         this.gameState = new GameState();
         this.collision = new Collision(this.gameState);
         
-        this.tickRate = 20; // Hz
+        this.tickRate = 10; // Hz (optimized from 20)
         this.tickInterval = 1000 / this.tickRate;
         this.lastTick = Date.now();
         this.isRunning = false;
         this.intervalId = null;
+        
+        // Performance monitoring
+        this.tickTimes = [];
+        this.maxTickSamples = 50;
         
         // Event callbacks
         this.onPlayerHit = null;
@@ -47,16 +51,20 @@ export class GameLoop {
     }
     
     tick() {
-        const now = Date.now();
+        const tickStart = Date.now();
+        const now = tickStart;
         const deltaTime = (now - this.lastTick) / 1000; // Convert to seconds
         this.lastTick = now;
+        
+        // Rebuild spatial hash for optimized collision detection
+        this.rebuildSpatialHash();
         
         // Update all game entities
         this.updatePlayers(deltaTime);
         this.updateBullets(deltaTime, now);
         this.updatePowerUps();
         
-        // Check collisions
+        // Check collisions (now using spatial hash)
         this.checkCollisions();
         
         // Spawn new entities
@@ -66,6 +74,42 @@ export class GameLoop {
         if (this.gameState.updateArenaSize() && this.onArenaResize) {
             this.onArenaResize(this.gameState.arenaSize);
         }
+        
+        // Track performance
+        const tickTime = Date.now() - tickStart;
+        this.tickTimes.push(tickTime);
+        if (this.tickTimes.length > this.maxTickSamples) {
+            this.tickTimes.shift();
+        }
+    }
+    
+    rebuildSpatialHash() {
+        const spatialHash = this.gameState.spatialHash;
+        spatialHash.clear();
+        
+        // Add players
+        for (const player of this.gameState.players.values()) {
+            if (player.isAlive) {
+                spatialHash.insert(player, 'player');
+            }
+        }
+        
+        // Add blocks
+        for (const block of this.gameState.blocks.values()) {
+            spatialHash.insert(block, 'block');
+        }
+        
+        // Add power-ups
+        for (const powerUp of this.gameState.powerUps.values()) {
+            spatialHash.insert(powerUp, 'powerUp');
+        }
+    }
+    
+    getPerformanceStats() {
+        if (this.tickTimes.length === 0) return null;
+        const avg = this.tickTimes.reduce((a, b) => a + b, 0) / this.tickTimes.length;
+        const max = Math.max(...this.tickTimes);
+        return { avgTickMs: avg.toFixed(2), maxTickMs: max.toFixed(2) };
     }
     
     updatePlayers(deltaTime) {
@@ -121,13 +165,16 @@ export class GameLoop {
         const halfArena = this.gameState.arenaSize / 2;
         const bulletsToRemove = [];
         
+        // Use lifetime from config (750ms = 300 units range)
+        const lifetime = this.gameState.config.bulletLifetime;
+        
         for (const [id, bullet] of this.gameState.bullets) {
             // Move bullet
             bullet.x += bullet.vx * deltaTime;
             bullet.z += bullet.vz * deltaTime;
             
             // Check lifetime
-            if (now - bullet.createdAt > this.gameState.config.bulletLifetime) {
+            if (now - bullet.createdAt > lifetime) {
                 bulletsToRemove.push(id);
                 continue;
             }
@@ -160,86 +207,79 @@ export class GameLoop {
     }
     
     checkCollisions() {
-        // Bullet vs Player
-        this.checkBulletPlayerCollisions();
-        
-        // Bullet vs Block
-        this.checkBulletBlockCollisions();
-        
-        // Player vs PowerUp
-        this.checkPlayerPowerUpCollisions();
-        
-        // Player vs Block (push back)
-        this.checkPlayerBlockCollisions();
+        // Optimized collision detection using SpatialHash
+        // Single pass for bullets against players and blocks
+        this.checkBulletCollisions();
+        // Single pass for players against powerups and blocks
+        this.checkPlayerCollisions();
     }
     
-    checkBulletPlayerCollisions() {
-        const bulletsToRemove = [];
+    checkBulletCollisions() {
+        const bulletsToRemove = new Set();
+        const blocksToRemove = new Set();
+        const spatialHash = this.gameState.spatialHash;
         
         for (const [bulletId, bullet] of this.gameState.bullets) {
-            for (const [playerId, player] of this.gameState.players) {
-                // Skip own bullets and dead players
-                if (bullet.ownerId === playerId || !player.isAlive) continue;
+            if (bulletsToRemove.has(bulletId)) continue;
+            
+            // Query nearby objects (radius 50 covers player and block sizes)
+            const nearby = spatialHash.query(bullet.x, bullet.z, 50);
+            
+            for (const item of nearby) {
+                const { entity, type } = item;
                 
-                // Skip invulnerable players
-                if (Date.now() < player.invulnerableUntil) continue;
-                
-                if (this.collision.bulletHitsPlayer(bullet, player)) {
-                    bulletsToRemove.push(bulletId);
+                if (type === 'player') {
+                    const player = entity;
+                    // Skip own bullets and dead players
+                    if (bullet.ownerId === player.id || !player.isAlive) continue;
+                    // Skip invulnerable players
+                    if (Date.now() < player.invulnerableUntil) continue;
                     
-                    // Apply damage
-                    player.hp -= bullet.damage;
-                    
-                    // Get shooter for score
-                    const shooter = this.gameState.getPlayer(bullet.ownerId);
-                    
-                    if (this.onPlayerHit) {
-                        this.onPlayerHit(playerId, bullet.ownerId, bullet.damage);
-                    }
-                    
-                    if (player.hp <= 0) {
-                        player.isAlive = false;
-                        player.deaths++;
+                    if (this.collision.bulletHitsPlayer(bullet, player)) {
+                        bulletsToRemove.add(bulletId);
                         
-                        if (shooter) {
-                            shooter.score += 100;
-                            shooter.kills++;
+                        // Apply damage
+                        player.hp -= bullet.damage;
+                        
+                        // Get shooter for score
+                        const shooter = this.gameState.getPlayer(bullet.ownerId);
+                        
+                        if (this.onPlayerHit) {
+                            this.onPlayerHit(player.id, bullet.ownerId, bullet.damage);
                         }
                         
-                        if (this.onPlayerDeath) {
-                            this.onPlayerDeath(playerId, bullet.ownerId);
+                        if (player.hp <= 0) {
+                            player.isAlive = false;
+                            player.deaths++;
+                            
+                            if (shooter) {
+                                shooter.score += 100;
+                                shooter.kills++;
+                            }
+                            
+                            if (this.onPlayerDeath) {
+                                this.onPlayerDeath(player.id, bullet.ownerId);
+                            }
                         }
+                        break; // Bullet can only hit one player
                     }
+                } else if (type === 'block') {
+                    const block = entity;
+                    if (blocksToRemove.has(block.id)) continue;
                     
-                    break; // Bullet can only hit one player
-                }
-            }
-        }
-        
-        for (const id of bulletsToRemove) {
-            this.gameState.removeBullet(id);
-        }
-    }
-    
-    checkBulletBlockCollisions() {
-        const bulletsToRemove = [];
-        const blocksToRemove = [];
-        
-        for (const [bulletId, bullet] of this.gameState.bullets) {
-            for (const [blockId, block] of this.gameState.blocks) {
-                if (this.collision.bulletHitsBlock(bullet, block)) {
-                    bulletsToRemove.push(bulletId);
-                    
-                    block.hp -= bullet.damage;
-                    if (block.hp <= 0) {
-                        blocksToRemove.push(blockId);
+                    if (this.collision.bulletHitsBlock(bullet, block)) {
+                        bulletsToRemove.add(bulletId);
                         
-                        if (this.onBlockDestroyed) {
-                            this.onBlockDestroyed(blockId);
+                        block.hp -= bullet.damage;
+                        if (block.hp <= 0) {
+                            blocksToRemove.add(block.id);
+                            
+                            if (this.onBlockDestroyed) {
+                                this.onBlockDestroyed(block.id);
+                            }
                         }
+                        break; // Bullet hits block
                     }
-                    
-                    break;
                 }
             }
         }
@@ -253,44 +293,46 @@ export class GameLoop {
         }
     }
     
-    checkPlayerPowerUpCollisions() {
-        const powerUpsToRemove = [];
+    checkPlayerCollisions() {
+        const powerUpsToRemove = new Set();
+        const spatialHash = this.gameState.spatialHash;
         
-        for (const [powerUpId, powerUp] of this.gameState.powerUps) {
-            for (const [playerId, player] of this.gameState.players) {
-                if (!player.isAlive) continue;
+        for (const player of this.gameState.players.values()) {
+            if (!player.isAlive) continue;
+            
+            // Query nearby objects (radius 60 covers blocks and powerups)
+            const nearby = spatialHash.query(player.x, player.z, 60);
+            
+            for (const item of nearby) {
+                const { entity, type } = item;
                 
-                if (this.collision.playerHitsPowerUp(player, powerUp)) {
-                    powerUpsToRemove.push(powerUpId);
+                if (type === 'powerUp') {
+                    const powerUp = entity;
+                    if (powerUpsToRemove.has(powerUp.id)) continue;
                     
-                    // Apply power-up effect
-                    this.applyPowerUp(player, powerUp);
-                    
-                    if (this.onPowerUpCollected) {
-                        this.onPowerUpCollected(playerId, powerUp.type);
+                    if (this.collision.playerHitsPowerUp(player, powerUp)) {
+                        powerUpsToRemove.add(powerUp.id);
+                        
+                        // Apply power-up effect
+                        this.applyPowerUp(player, powerUp);
+                        
+                        if (this.onPowerUpCollected) {
+                            this.onPowerUpCollected(player.id, powerUp.type);
+                        }
                     }
-                    
-                    break;
+                } else if (type === 'block') {
+                    const block = entity;
+                    const pushback = this.collision.getPlayerBlockPushback(player, block);
+                    if (pushback) {
+                        player.x += pushback.x;
+                        player.z += pushback.z;
+                    }
                 }
             }
         }
         
         for (const id of powerUpsToRemove) {
             this.gameState.removePowerUp(id);
-        }
-    }
-    
-    checkPlayerBlockCollisions() {
-        for (const player of this.gameState.players.values()) {
-            if (!player.isAlive) continue;
-            
-            for (const block of this.gameState.blocks.values()) {
-                const pushback = this.collision.getPlayerBlockPushback(player, block);
-                if (pushback) {
-                    player.x += pushback.x;
-                    player.z += pushback.z;
-                }
-            }
         }
     }
     
@@ -323,6 +365,9 @@ export class GameLoop {
         if (!player || !player.isAlive) return [];
         
         const now = Date.now();
+        
+        // Check respawn shooting cooldown
+        if (now < player.cantShootUntil) return [];
         
         // Fire rate limiting (1000ms = 1 second between shots)
         if (now - player.lastShotTime < 1000) return [];
@@ -362,6 +407,7 @@ export class GameLoop {
         player.hasTripleShot = false;
         player.hasSpeedBoost = false;
         player.invulnerableUntil = Date.now() + this.gameState.config.respawnInvulnerability;
+        player.cantShootUntil = Date.now() + 2000; // 2 seconds shooting cooldown
         
         return player;
     }

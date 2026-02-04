@@ -40,6 +40,7 @@ export class Player {
         // State
         this.isAlive = true;
         this.invulnerableUntil = 0;
+        this.cantShootUntil = 0;
         
         // Power-ups
         this.hasTripleShot = false;

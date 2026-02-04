@@ -22,9 +22,20 @@ function App() {
     const [ping, setPing] = useState(0);
     const [kills, setKills] = useState([]);
     const [killedBy, setKilledBy] = useState(null);
+    const [respawnTimer, setRespawnTimer] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     
     const mobile = isMobile();
+    
+    // Respawn timer countdown
+    useEffect(() => {
+        if (respawnTimer > 0) {
+            const timerId = setTimeout(() => {
+                setRespawnTimer(prev => prev - 1);
+            }, 1000);
+            return () => clearTimeout(timerId);
+        }
+    }, [respawnTimer]);
     
     // Initialize game and network
     useEffect(() => {
@@ -68,6 +79,7 @@ function App() {
             if (data.playerId === network.playerId) {
                 setKilledBy(data.killerName);
                 setGameState('dead');
+                setRespawnTimer(4); // Start 4 second cooldown
             }
         });
         
@@ -239,6 +251,7 @@ function App() {
                     isDeath={true}
                     killedBy={killedBy}
                     nickname={playerData?.n}
+                    respawnTimer={respawnTimer}
                 />
             )}
             

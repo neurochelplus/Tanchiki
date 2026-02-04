@@ -32,6 +32,7 @@ export class BulletManager {
     
     updateFromServer(bulletsData) {
         const activeIds = new Set();
+        const speed = 400; // Match server config
         
         for (const data of bulletsData) {
             activeIds.add(data.id);
@@ -39,6 +40,9 @@ export class BulletManager {
             if (this.bullets.has(data.id)) {
                 // Update existing bullet
                 const bullet = this.bullets.get(data.id);
+                // Correct position from server
+                // We rely on local update(deltaTime) for smoothness, 
+                // this just corrects drift every 100ms
                 bullet.x = data.x;
                 bullet.z = data.z;
             } else {
@@ -46,7 +50,9 @@ export class BulletManager {
                 this.bullets.set(data.id, {
                     x: data.x,
                     z: data.z,
-                    angle: data.a
+                    angle: data.a,
+                    vx: Math.sin(data.a) * speed,
+                    vz: -Math.cos(data.a) * speed
                 });
             }
         }
@@ -57,9 +63,6 @@ export class BulletManager {
                 this.bullets.delete(id);
             }
         }
-        
-        // Update instanced mesh
-        this.updateMesh();
     }
     
     updateMesh() {
@@ -79,7 +82,13 @@ export class BulletManager {
     }
     
     update(deltaTime) {
-        // Animation/effects could go here
+        // Move bullets locally for smooth animation
+        for (const bullet of this.bullets.values()) {
+            bullet.x += bullet.vx * deltaTime;
+            bullet.z += bullet.vz * deltaTime;
+        }
+        
+        this.updateMesh();
     }
     
     dispose() {

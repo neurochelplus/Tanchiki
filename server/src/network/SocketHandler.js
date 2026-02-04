@@ -11,10 +11,10 @@ export class SocketHandler {
         // Setup game loop callbacks
         this.setupGameCallbacks();
         
-        // Broadcast state at fixed interval
+        // Broadcast state at fixed interval (optimized to 10 Hz)
         this.broadcastInterval = setInterval(() => {
             this.broadcastGameState();
-        }, 1000 / 20); // 20 Hz
+        }, 1000 / 10); // 10 Hz (was 20 Hz)
     }
     
     setupGameCallbacks() {
