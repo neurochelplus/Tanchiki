@@ -90,7 +90,7 @@ export class SocketHandler {
     handleJoin(socket, data) {
         // Check if server is full (limit 50 players)
         if (this.gameState.getPlayerCount() >= 50) {
-            socket.emit('serverFull', { message: 'Server is full (max 50 players)' });
+            socket.emit('serverFull', { message: 'На арене сейчас слишком жарко! Сервер переполнен. Попробуй зайти через 5 минут или загляни в мой Telegram, чтобы узнать, когда мы расширим мощности' });
             return;
         }
 
