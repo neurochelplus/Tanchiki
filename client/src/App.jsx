@@ -60,6 +60,12 @@ function App() {
             setGameState('menu');
         });
         
+        network.on('serverFull', (data) => {
+            alert(data.message || 'Server is full!');
+            // Ensure we stay in menu
+            setGameState('menu');
+        });
+        
         network.on('gameState', (state) => {
             game.updateFromServer(state);
             

@@ -88,6 +88,12 @@ export class SocketHandler {
     }
     
     handleJoin(socket, data) {
+        // Check if server is full (limit 50 players)
+        if (this.gameState.getPlayerCount() >= 50) {
+            socket.emit('serverFull', { message: 'Server is full (max 50 players)' });
+            return;
+        }
+
         const nickname = (data.nickname || 'Player').substring(0, 16);
         const player = this.gameState.addPlayer(socket.id, nickname);
         

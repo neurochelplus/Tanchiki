@@ -94,6 +94,10 @@ export class NetworkManager {
             this.emit('arenaResize', data);
         });
         
+        this.socket.on('serverFull', (data) => {
+            this.emit('serverFull', data);
+        });
+        
         // Ping/pong for latency
         this.socket.on('pong', (timestamp) => {
             const ping = Date.now() - timestamp;
